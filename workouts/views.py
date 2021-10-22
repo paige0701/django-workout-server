@@ -1,27 +1,28 @@
 from django.http import JsonResponse
+from rest_framework.parsers import JSONParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+
 from workouts.models import Workout
 from workouts.serializers import WorkoutSerializer
-from rest_framework.parsers import JSONParser
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework import permissions
 
 
 # Create your views here.
-@csrf_exempt
-def workout_list(request):
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    if request.method == 'GET':
-        workouts = Workout.objects.all()
+class WorkoutView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request):
+        workouts = Workout.objects.get(user=self.request.user).all()
         serializer = WorkoutSerializer(workouts, many=True)
         return JsonResponse(serializer.data, safe=False)
-    elif request.method == 'POST':
+
+    def post(self, request):
         data = JSONParser().parse(request)
         serializer = WorkoutSerializer(data=data)
         if serializer.is_valid():
-            serializer.save()
+            self.perform_create(serializer)
             return JsonResponse(serializer.data, status=201)
         return JsonResponse(serializer.errors, status=400)
 
-
-def perform_create(self, serializer):
-    serializer.save(user=self.request.user)
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
