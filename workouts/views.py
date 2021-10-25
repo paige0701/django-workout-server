@@ -5,14 +5,15 @@ from rest_framework.views import APIView
 
 from workouts.models import Workout
 from workouts.serializers import WorkoutSerializer
+from django.shortcuts import get_object_or_404
 
 
 # Create your views here.
-class WorkoutView(APIView):
+class WorkoutListView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        workouts = Workout.objects.all()
+        workouts = Workout.objects.filter(show_yn='Y')
         serializer = WorkoutSerializer(workouts, many=True)
         return JsonResponse(serializer.data, safe=False)
 
@@ -26,3 +27,22 @@ class WorkoutView(APIView):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class WorkoutDetailView(APIView):
+    permission_classes = (IsAuthenticated,)
+
+    def get_object(self, pk):
+        return get_object_or_404(Workout, pk=pk)
+
+    def get(self, request, pk):
+        obj = self.get_object(pk)
+        serializer = WorkoutSerializer(obj, many=False)
+        return JsonResponse(serializer.data, safe=False)
+
+    def put(self, request, pk):
+        workout = self.get_object(pk)
+        workout.show_yn = 'N'
+        workout.save()
+        serializer = WorkoutSerializer(workout, many=False)
+        return JsonResponse(serializer.data, safe=False)
