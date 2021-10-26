@@ -46,3 +46,11 @@ class WorkoutDetailView(APIView):
         workout.save()
         serializer = WorkoutSerializer(workout, many=False)
         return JsonResponse(serializer.data, safe=False)
+
+    def post(self, request, pk):
+        workout = self.get_object(pk)
+        data = JSONParser().parse(request)
+        workout.title = data['title']
+        workout.save()
+        serializer = WorkoutSerializer(workout, many=False)
+        return JsonResponse(serializer.data, safe=False)
