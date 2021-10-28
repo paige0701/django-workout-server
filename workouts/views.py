@@ -13,7 +13,7 @@ class WorkoutListView(APIView):
     permission_classes = (IsAuthenticated,)
 
     def get(self, request):
-        workouts = Workout.objects.filter(show_yn='Y')
+        workouts = Workout.objects.filter(show_yn='Y', user=request.user)
         serializer = WorkoutSerializer(workouts, many=True)
         return JsonResponse(serializer.data, safe=False)
 

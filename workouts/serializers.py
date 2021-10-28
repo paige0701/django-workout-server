@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 
 
 class WorkoutSerializer(serializers.ModelSerializer):
-    user = serializers.ReadOnlyField(source='user.username')
+    user = serializers.ReadOnlyField(source='user.email')
 
     class Meta:
         model = Workout
