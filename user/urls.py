@@ -7,5 +7,8 @@ urlpatterns = [
     path('create/', views.create.as_view()),
     path('token/', auth_views.obtain_auth_token),
     path('kakao/login/', views.kakao_login_view),
+    path('kakao/logout/', views.kakao_logout_view),
     path('kakao/login/finish/', views.KakaoLogin.as_view()),
+    path('google/login/', views.google_login_view),
+    path('google/login/finish/', views.GoogleLogin.as_view()),
 ]
