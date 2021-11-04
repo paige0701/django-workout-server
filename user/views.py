@@ -3,6 +3,8 @@ from allauth.socialaccount.models import SocialAccount
 from rest_framework import permissions, status
 from rest_framework.generics import CreateAPIView
 from rest_framework.parsers import JSONParser
+from rest_framework_simplejwt.tokens import RefreshToken
+
 from .models import User
 from .serializers import UserSerializer
 from django.views.decorators.csrf import csrf_exempt
@@ -34,15 +36,12 @@ def user_list(request):
 
 
 @csrf_exempt
-def kakao_logout_view(request):
+def logout_view(request):
     data = JSONParser().parse(request)
-    access_token = data['access_token']
-    rr = requests.post(
-        "https://kapi.kakao.com/v1/user/logout",
-        headers={"Authorization": f"Bearer {access_token}",
-                 },
-    )
-    return JsonResponse(rr.json())
+    refresh_token = data["refresh_token"]
+    token = RefreshToken(refresh_token)
+    token.blacklist()
+    return JsonResponse({'msg': 'Successfully logged out'}, safe=False)
 
 
 @csrf_exempt
