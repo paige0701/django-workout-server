@@ -12,11 +12,20 @@ from workouts.models import Workout
 from workouts.serializers import WorkoutSerializer
 
 
-class RecordListView(APIView):
+class RecordMonthlyView(APIView):
     permission_classes = (IsAuthenticated,)
 
-    def get(self, request):
-        pass
+    def get(self, request, pk):
+        year, month = pk.split('-')
+        records = Record.objects.filter(user=request.user,
+                                        record_date__year=year,
+                                        record_date__month=month)
+        record_serializers = RecordSerializer(records, many=True)
+        return JsonResponse(record_serializers.data, safe=False)
+
+
+class RecordListView(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def post(self, request):
         data = JSONParser().parse(request)
