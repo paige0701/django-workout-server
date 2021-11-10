@@ -56,5 +56,4 @@ class RecordDetailView(APIView):
     def delete(self, request, pk):
         record = self.get_object(pk)
         record.delete()
-        serializer = RecordSerializer(record, many=False)
-        return JsonResponse(serializer.data, safe=False)
+        return JsonResponse({"msg": "success"}, status=200)
