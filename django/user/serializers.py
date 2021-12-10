@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from user.models import User
-from workouts.models import Workout
+from django.user.models import User
+from django.workouts.models import Workout
 
 
 class UserSerializer(serializers.ModelSerializer):

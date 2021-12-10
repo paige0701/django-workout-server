@@ -4,7 +4,7 @@ from django.utils.translation import ugettext_lazy as _
 # Create your models here.
 from django.db import models
 
-from user.managers import CustomUserManager
+from django.user.managers import CustomUserManager
 
 
 class User(AbstractUser):

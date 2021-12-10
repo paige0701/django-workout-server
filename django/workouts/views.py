@@ -3,8 +3,8 @@ from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from workouts.models import Workout
-from workouts.serializers import WorkoutSerializer
+from django.workouts.models import Workout
+from django.workouts.serializers import WorkoutSerializer
 from django.shortcuts import get_object_or_404
 
 

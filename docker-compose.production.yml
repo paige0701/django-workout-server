@@ -1,0 +1,36 @@
+version: '3'
+services:
+  django:
+    build:
+      context: ./django
+      dockerfile: ./Dockerfile.production
+    image: cde0701/djangoproject_web
+    container_name: django-container
+    entrypoint:
+      - /docker-entrypoint.production.sh
+    depends_on:
+      - db
+    env_file:
+      - ./.env.dev
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: ./Dockerfile.production
+    image: nginx-image
+    container_name: nginx-container
+    ports:
+      - "80"
+    depends_on:
+      - django
+    links:
+      - django
+    entrypoint:
+      - /docker-entrypoint.production.sh
+  db:
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres

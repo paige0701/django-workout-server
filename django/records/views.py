@@ -1,15 +1,15 @@
 from django.http import JsonResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 
 # Create your views here.
 from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
-from records.models import Record
-from records.serializers import RecordSerializer
-from workouts.models import Workout
-from workouts.serializers import WorkoutSerializer
+from django.records.models import Record
+from django.records.serializers import RecordSerializer
+from django.workouts.models import Workout
+from django.workouts.serializers import WorkoutSerializer
 
 
 class RecordMonthlyView(APIView):

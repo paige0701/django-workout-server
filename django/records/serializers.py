@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from records.models import Record
-from workouts.serializers import WorkoutSerializer
+from django.records.models import Record
+from django.workouts.serializers import WorkoutSerializer
 
 
 class RecordSerializer(serializers.ModelSerializer):

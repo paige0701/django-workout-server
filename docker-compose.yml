@@ -14,21 +14,20 @@ services:
   db:
     image: postgres
     volumes:
-      - ./data/db:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data/
     environment:
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
   web:
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: cde0701/djangoproject_web
+    build: ./app
     command: bash -c "python manage.py collectstatic --no-input && python manage.py makemigrations && python manage.py migrate && gunicorn djangoProject.wsgi:application -b 0:80"
     volumes:
-      - static:/static
+      - ./app/:/usr/src/app/
     depends_on:
       - db
-    ports:
-      - "8000:8000"
+    env_file:
+      - ./.env.dev
 volumes:
-  static:
+  postgres_data:

@@ -1,5 +1,5 @@
 from django.urls import path
-from records import views
+from django.records import views
 
 urlpatterns = [
     path('', views.RecordListView.as_view()),
