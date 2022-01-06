@@ -14,7 +14,7 @@ from allauth.socialaccount.providers.kakao import views as kakao_view
 from allauth.socialaccount.providers.google import views as google_view
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 
-BASE_URL = 'http://localhost:8000/'
+BASE_URL = 'http://13.125.183.97:80/'
 KAKAO_CALLBACK_URI = 'api/v1/authentication/kakao/login/finish/'
 GOOGLE_CALLBACK_URI = 'api/v1/authentication/google/login/finish/'
 
