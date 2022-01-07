@@ -69,7 +69,7 @@ def kakao_login_view(request):
             return JsonResponse({'err_msg': 'User already exists with Google'}, status=status.HTTP_400_BAD_REQUEST)
             # 기존에 Google로 가입된 유저
         data = {'access_token': access_token}
-        accept = requests.post(
+        accept = requests.get(
             f"{BASE_URL}{KAKAO_CALLBACK_URI}", data=data)
         accept_status = accept.status_code
         if accept_status != 200:
@@ -79,7 +79,7 @@ def kakao_login_view(request):
         return JsonResponse(accept_json)
     except User.DoesNotExist:
         data = {'access_token': access_token}
-        accept = requests.post(
+        accept = requests.get(
             f"{BASE_URL}{KAKAO_CALLBACK_URI}", data=data)
         accept_status = accept.status_code
         if accept_status != 200:
