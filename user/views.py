@@ -1,11 +1,10 @@
 import requests
 from allauth.socialaccount.models import SocialAccount
+from django.views import View
 from rest_framework import permissions, status
-from rest_framework.decorators import api_view
 from rest_framework.generics import CreateAPIView
 from rest_framework.parsers import JSONParser
 from rest_framework_simplejwt.tokens import RefreshToken
-
 from .models import User
 from .serializers import UserSerializer
 from django.views.decorators.csrf import csrf_exempt
@@ -15,7 +14,7 @@ from allauth.socialaccount.providers.kakao import views as kakao_view
 from allauth.socialaccount.providers.google import views as google_view
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 
-BASE_URL = 'http://13.125.183.97:80/'
+BASE_URL = 'http://www.p1aner.xyz:80/'
 KAKAO_CALLBACK_URI = 'api/v1/authentication/kakao/login/finish/'
 GOOGLE_CALLBACK_URI = 'api/v1/authentication/google/login/finish/'
 
@@ -45,51 +44,53 @@ def logout_view(request):
     return JsonResponse({'msg': 'Successfully logged out'}, safe=False)
 
 
-@csrf_exempt
-@api_view(['POST'])
-def kakao_login_view(request):
-    if request.method == 'POST':
-        data = JSONParser().parse(request)
-        access_token = data['access_token']
-
-        profile_request = requests.post(
-            "https://kapi.kakao.com/v2/user/me",
-            headers={"Authorization": f"Bearer {access_token}",
-                     },
-        )
-        profile_json = profile_request.json()
-        kakao_account = profile_json.get("kakao_account")
-        email = kakao_account.get("email", None)
-        if email is None:
-            return JsonResponse({'err_msg': 'Please allow email access'}, status=status.HTTP_400_BAD_REQUEST)
-
+class KakaoSignInView(View):
+    def post(self, request):
         try:
-            user = User.objects.get(email=email)
-            social_user = SocialAccount.objects.get(user=user)
-            if social_user is None:
-                return JsonResponse({'err_msg': 'email exists but not social user'}, status=status.HTTP_400_BAD_REQUEST)
-            if social_user.provider != 'kakao':
-                return JsonResponse({'err_msg': 'User already exists with Google'}, status=status.HTTP_400_BAD_REQUEST)
-                # 기존에 Google로 가입된 유저
-            data = {'access_token': access_token}
-            accept = requests.get(
-                f"{BASE_URL}{KAKAO_CALLBACK_URI}", data=data)
-            accept_status = accept.status_code
-            if accept_status != 200:
-                return JsonResponse({'err_msg': 'failed to signin'}, status=accept_status)
-            accept_json = accept.json()
-            accept_json.pop('user', None)
-            return JsonResponse(accept_json)
-        except User.DoesNotExist:
-            data = {'access_token': access_token}
-            accept = requests.get(
-                f"{BASE_URL}{KAKAO_CALLBACK_URI}", data=data)
-            accept_status = accept.status_code
-            if accept_status != 200:
-                return JsonResponse({'err_msg': 'failed to signup'}, status=accept_status)
-            accept_json = accept.json()
-            accept_json.pop('user', None)
-            return JsonResponse(accept_json)
+            data = JSONParser().parse(request)
+            access_token = data['access_token']
+            url = "https://kapi.kakao.com/v2/user/me"
+            header = {
+                'Authorization': 'Bearer {}'.format(access_token)
+            }
+            response = requests.get(url, headers=header).json()
+            kakao_account = response.get("kakao_account")
+            email = kakao_account.get("email", None)
+
+            if email is None:
+                return JsonResponse({'err_msg': 'Please allow email access'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                user = User.objects.get(email=email)
+                social_user = SocialAccount.objects.get(user=user)
+                if social_user is None:
+                    return JsonResponse({'err_msg': 'email exists but not social user'},
+                                        status=status.HTTP_400_BAD_REQUEST)
+                if social_user.provider != 'kakao':
+                    return JsonResponse({'err_msg': 'User already exists with Google'},
+                                        status=status.HTTP_400_BAD_REQUEST)
+                    # 기존에 Google로 가입된 유저
+                data = {'access_token': access_token}
+                accept = requests.post(
+                    f"{BASE_URL}{KAKAO_CALLBACK_URI}", data=data)
+                accept_status = accept.status_code
+                if accept_status != 200:
+                    return JsonResponse({'err_msg': 'failed to signin'}, status=accept_status)
+                accept_json = accept.json()
+                accept_json.pop('user', None)
+                return JsonResponse(accept_json)
+            except User.DoesNotExist:
+                data = {'access_token': access_token}
+                accept = requests.post(
+                    f"{BASE_URL}{KAKAO_CALLBACK_URI}", data=data)
+                accept_status = accept.status_code
+                if accept_status != 200:
+                    return JsonResponse({'err_msg': 'failed to signup'}, status=accept_status)
+                accept_json = accept.json()
+                accept_json.pop('user', None)
+                return JsonResponse(accept_json)
+        except:
+            return JsonResponse({'message': 'TOKEN_INVALID'}, status=401)
 
 
 class KakaoLogin(SocialLoginView):
@@ -97,16 +98,13 @@ class KakaoLogin(SocialLoginView):
     client_class = OAuth2Client
     callback_url = KAKAO_CALLBACK_URI
 
+class GoogleSignInView(View):
 
-@csrf_exempt
-@api_view(['POST'])
-def google_login_view(request):
-
-    if request.method == 'POST':
+    def post(self, request):
         data = JSONParser().parse(request)
         access_token = data['access_token']
         email = data['email']
-
+        # access_token = request.headers['Authorization'].split('Bearer ')[1]
         if email is None:
             # email 없으면 연결 끊어야함 이메일 체크하라고 해야함
             pass
@@ -117,10 +115,11 @@ def google_login_view(request):
             if social_user is None:
                 return JsonResponse({'err_msg': 'email exists but not social user'}, status=status.HTTP_400_BAD_REQUEST)
             if social_user.provider != 'google':
-                return JsonResponse({'err_msg': 'User already registered with Kakao'}, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({'err_msg': 'User already registered with Kakao'},
+                                    status=status.HTTP_400_BAD_REQUEST)
                 # 기존에 Google로 가입된 유저
             data = {'access_token': access_token}
-            accept = requests.get(
+            accept = requests.post(
                 f"{BASE_URL}{GOOGLE_CALLBACK_URI}", data=data)
             accept_status = accept.status_code
             if accept_status != 200:
@@ -130,7 +129,7 @@ def google_login_view(request):
             return JsonResponse(accept_json)
         except User.DoesNotExist:
             data = {'access_token': access_token}
-            accept = requests.get(
+            accept = requests.post(
                 f"{BASE_URL}{GOOGLE_CALLBACK_URI}", data=data)
             accept_status = accept.status_code
             if accept_status != 200:
